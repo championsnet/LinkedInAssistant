@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "LinkedIn Assistant",
+    "version": "1.0",
+    "description": "A simple Chrome extension that highlights worthy jobs on LinkedIn.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "storage",
+        "tabs"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "host_permissions": [
+        "*://*.linkedin.com/*" 
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.linkedin.com/jobs/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "icons": {
+        "128": "images/icon.png"
+    }
+}
