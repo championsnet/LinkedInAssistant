@@ -40,7 +40,7 @@ Installation
 
 1.  Download or clone this GitHub repository to your computer.
     
-    *   bashCopy codegit clone https://github.com/your-username/linkedin-job-highlighter.git
+    *   `git clone https://github.com/championsnet/LinkedInAssistant.git`
         
     *   Or download it as a **ZIP** file and extract it on your computer.
         
