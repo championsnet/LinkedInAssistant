@@ -2,6 +2,7 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log("Extension installed.");
 });
 
+hooked = false;
 // Listen for tab updates to inject content script when the LinkedIn page changes
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log('tab updated');
@@ -11,5 +12,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             target: { tabId: tabId },
             files: ['content.js']
         });
+        hooked = true;
     }
 });
