@@ -2,21 +2,24 @@ runningState = false;
 
 // Function to identify and highlight worthy jobs
 function highlightWorthyJobs() {
+    console.log('highlightWorthyJobs function called', runningState);
     if (runningState) return;  // Skip if the function is already running
     runningState = true;
-    const jobElements = document.querySelectorAll('li.jobs-search-results__list-item'); // Target the list item elements for jobs
+    const jobElements = document.querySelectorAll('li[data-occludable-job-id]');
 
     const frenchSpeakingCantons = ['Geneva', 'Vaud', 'Neuchâtel', 'Fribourg', 'Jura', 'Valais', 'Lausanne', 'St Gallen'];
     const italianSpeakingCantons = ['Ticino', 'Graubünden'];  // Add Italian-speaking cantons
-    const unwantedLocations = ['EMEA']
+    const unwantedLocations = ['EMEA', 'DACH']
 
     // List of common German words and words with special characters
     const germanWords = [
         'Werkstudent', 'Lehrstelle', 'Ingenieur', 'Entwickler', 'Berater', 'Anwalt', 'Verkäufer', 'Lehrer', 'Kundenbetreuung', 'Buchhalter', 'Fachkraft', 'Assistent', 'Praktikant', 'Bankett', 'Augenoptiker', 'Praktikum', 'Filialleiter', 'Fachmann', 'Fachfrau', 'Wochenstunden',
         'beiter', 'Elektroniker', 'Elektronikerin', 'Elektronik', 'Bussnang', 'chauff', 'schwere', 'monteur', 'stieg', 'Druck', 'Collaborateur', 'Reifenpraktiker',
         'Automatiker', 'Zeichner', 'techniker', 'technikerin', 'technik', 'technikum', 'technikus', 'technikum', 'technikus', 'Baumas', 'Zimmermann', 'Logistiker', 'schafter', 'schafterin', 'schaft', 'schaften', 'schaftler', 'schaftlerin', 'stellter', 'Vendeur',
-        'Ärzt', 'Büro', 'Schüler', 'Straße', 'Züchter', 'Über', 'Flüge', 'Größe', 'Möbel', 'Höhe', 'Können', 'Möglich', 'Wählen', 'Fähigkeit', 'Fähig', 'Lehre', 'Metzger', 'Köche', 'Köchin', 'Koch', 'Köchin', 'Fach', 'Mitarbeiterin', 'Mitarbeiter', 'Kraft', 'Kraftfahrer', 'Kraftfahrerin', 'Kraftfahrzeug', 'Kraftfahrzeugführer', 'Kraftfahrzeugführerin', 'Kraftfahrzeugmechatroniker', 'Kraftfahr',
+        'Ärzt', 'Bereich', 'Büro', 'Schüler', 'Straße', 'Züchter', 'Über', 'Flüge', 'Größe', 'Möbel', 'Höhe', 'Können', 'Möglich', 'Wählen', 'Fähigkeit', 'Fähig', 'Lehre', 'Metzger', 'Köche', 'Köchin', 'Koch', 'Köchin', 'Fach', 'Mitarbeiterin', 'Mitarbeiter', 'Kraft', 'Kraftfahrer', 'Kraftfahrerin', 'Kraftfahrzeug', 'Kraftfahrzeugführer', 'Kraftfahrzeugführerin', 'Kraftfahrzeugmechatroniker', 'Kraftfahr',
     ];
+
+    const jobTitles = ['Senior', 'Lead', 'Director', 'VP', 'C-Level', 'Chief', 'Head of', 'Principal', 'Architect'];
 
 
     const unwantedEmployers = ['Rocken', 'eFinancialCareers']
@@ -25,10 +28,15 @@ function highlightWorthyJobs() {
     const containsGermanSpecialChars = (text) => /[äöüßÉàá]/.test(text);
 
     jobElements.forEach(job => {
-        const titleElement = job.querySelector('.job-card-list__title');  // Title of the job
-        const jobPoster = job.querySelector('.job-card-container__primary-description');  // Employer of the job
-        const locationElement = job.querySelector('.job-card-container__metadata-item');  // Location of the job
-        const footerElement = job.querySelector('.job-card-container__footer-item');  // Footer, e.g. 'Promoted' or 'Viewed'
+        const titleElement = job.querySelector('a.job-card-container__link');
+
+        const jobPoster = job.querySelector('.artdeco-entity-lockup__subtitle');
+
+        const locationElement = job.querySelector('.job-card-container__metadata-wrapper li');
+
+        const footerElement = job.querySelector('.job-card-container__footer-item');
+
+        const photoElement = job.querySelector('.ivm-view-attr__img-wrapper');
 
         // Skip if the title or location is missing (to avoid errors)
         if (!titleElement || !locationElement) return;
@@ -38,8 +46,14 @@ function highlightWorthyJobs() {
         const footerText = footerElement ? footerElement.innerText.trim().toLowerCase() : '';
 
         // Remove 'viewed' jobs (or jobs with specific keywords in the footer)
-        if (footerText.includes('viewed')) {
+        if (footerText.includes('viewed') || footerText.includes('applied')) {
             job.style.opacity = 0.4;  // Hide jobs that are viewed
+            return;  // Skip to the next job
+        }
+
+        // Remove jobs with the default profile picture
+        if (photoElement && photoElement.querySelector('.EntityPhoto-square-4-ghost-company') != null) {
+            job.style.opacity = 0.4;  // Hide jobs with the default profile picture
             return;  // Skip to the next job
         }
 
@@ -57,17 +71,25 @@ function highlightWorthyJobs() {
             return;  // Skip to the next job
         }
 
-        // // Remove jobs located in unwanted locations
-        // const isUnwantedLocation = unwantedLocations.some(location => location.includes(location));
-        // if (isUnwantedLocation) {
-        //     job.style.opacity = 0.4;  // Hide jobs located in unwanted locations
-        //     return;  // Skip to the next job
-        // }
+        // Remove jobs located in unwanted locations
+        const isUnwantedLocation = unwantedLocations.some(loc => location.includes(loc));
+        console.log('isUnwantedLocation', isUnwantedLocation, location);
+        if (isUnwantedLocation) {
+            job.style.opacity = 0.4;  // Hide jobs located in unwanted locations
+            return;  // Skip to the next job
+        }
 
         // Remove jobs that contain German words in the title
         const isGermanJob = germanWords.some(word => title.toLowerCase().includes(word.toLowerCase()));
         if (isGermanJob || containsGermanSpecialChars(title)) {
             job.style.opacity = 0.4;  // Hide jobs with German words or special German characters
+            return;  // Skip to the next job
+        }
+
+        // Remove jobs that contain specific job titles
+        const isJobTitle = jobTitles.some(jobTitle => title.toLowerCase().includes(jobTitle.toLowerCase()));
+        if (isJobTitle) {
+            job.style.opacity = 0.4;  // Hide jobs with specific job titles
             return;  // Skip to the next job
         }
 
@@ -81,8 +103,8 @@ function highlightWorthyJobs() {
         // Highlight jobs that pass the filters
         job.style.backgroundColor = 'lightyellow';  // Highlight worthy jobs
 
-        runningState = false;
     });
+    runningState = false;
 }
 
 // Function to observe changes to the job list and re-apply the filtering
